@@ -11,10 +11,6 @@ VPINBALL_LICENSE_FILES = LICENSE
 VPINBALL_DEPENDENCIES = host-libcurl host-cmake libfreeimage libpinmame libaltsound libdmdutil libdof sdl3 sdl3_image sdl3_ttf ffmpeg
 VPINBALL_SUPPORTS_IN_SOURCE_BUILD = NO
 
-# bgfx with vpinball patches (vbousquet fork)
-VPINBALL_BGFX_CMAKE_VERSION = 1.136.9106-504
-VPINBALL_BGFX_PATCH_SHA = 054c6ea05099a6e283bd367033d18181bb79a135
-
 # handle supported target platforms
 ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_RK3588)$(BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO),y)
     SOURCE = CMakeLists_bgfx-linux-aarch64.txt
@@ -39,15 +35,17 @@ ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY),y)
 endif
 
 define VPINBALL_BUILD_BGFX
+    $(eval BGFX_CMAKE_VERSION = $(shell grep 'BGFX_CMAKE_VERSION=' $(@D)/platforms/config.sh | cut -d= -f2))
+    $(eval BGFX_PATCH_SHA = $(shell grep 'BGFX_PATCH_SHA=' $(@D)/platforms/config.sh | cut -d= -f2))
     mkdir -p $(@D)/external-build/bgfx
-    $(HOST_DIR)/bin/curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v$(VPINBALL_BGFX_CMAKE_VERSION)/bgfx.cmake.v$(VPINBALL_BGFX_CMAKE_VERSION).tar.gz \
+    $(HOST_DIR)/bin/curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v$(BGFX_CMAKE_VERSION)/bgfx.cmake.v$(BGFX_CMAKE_VERSION).tar.gz \
         -o $(@D)/external-build/bgfx/bgfx.cmake.tar.gz
     $(TAR) -xzf $(@D)/external-build/bgfx/bgfx.cmake.tar.gz -C $(@D)/external-build/bgfx
-    $(HOST_DIR)/bin/curl -sL https://github.com/vbousquet/bgfx/archive/$(VPINBALL_BGFX_PATCH_SHA).tar.gz \
+    $(HOST_DIR)/bin/curl -sL https://github.com/vbousquet/bgfx/archive/$(BGFX_PATCH_SHA).tar.gz \
         -o $(@D)/external-build/bgfx/bgfx-patch.tar.gz
     $(TAR) -xzf $(@D)/external-build/bgfx/bgfx-patch.tar.gz -C $(@D)/external-build/bgfx
     rm -rf $(@D)/external-build/bgfx/bgfx.cmake/bgfx
-    mv $(@D)/external-build/bgfx/bgfx-$(VPINBALL_BGFX_PATCH_SHA) $(@D)/external-build/bgfx/bgfx.cmake/bgfx
+    mv $(@D)/external-build/bgfx/bgfx-$(BGFX_PATCH_SHA) $(@D)/external-build/bgfx/bgfx.cmake/bgfx
     cd $(@D)/external-build/bgfx/bgfx.cmake && \
     $(BR2_CMAKE) -S. \
         -DCMAKE_C_COMPILER="$(TARGET_CC)" \
@@ -65,7 +63,6 @@ define VPINBALL_BUILD_BGFX
         -DCMAKE_BUILD_TYPE=Release \
         -B build
     $(BR2_CMAKE) --build $(@D)/external-build/bgfx/bgfx.cmake/build -- -j$(PARALLEL_JOBS)
-    # install bgfx to local third-party (not staging)
     mkdir -p $(@D)/third-party/include $(@D)/third-party/runtime-libs/$(SOURCE_DIR)
     cp -r $(@D)/external-build/bgfx/bgfx.cmake/bgfx/include/bgfx $(@D)/third-party/include/
     cp -r $(@D)/external-build/bgfx/bgfx.cmake/bimg/include/bimg $(@D)/third-party/include/
