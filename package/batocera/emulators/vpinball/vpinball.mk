@@ -11,12 +11,11 @@ VPINBALL_LICENSE = GPLv3+
 VPINBALL_LICENSE_FILES = LICENSE
 VPINBALL_DEPENDENCIES = host-libcurl host-cmake libfreeimage libpinmame
 VPINBALL_DEPENDENCIES += libdmdutil libdof sdl3 sdl3_image sdl3_ttf
-VPINBALL_DEPENDENCIES += bgfx ffmpeg libaltsound libwinevbs
+VPINBALL_DEPENDENCIES += bgfx ffmpeg libaltsound libwinevbs openxr-sdk vulkan-headers
 VPINBALL_SUPPORTS_IN_SOURCE_BUILD = NO
 VPINBALL_EMULATOR_INFO = vpinball.emulator.yml
 
 VPINBALL_CONF_OPTS += -DCMAKE_BUILD_TYPE=Release
-VPINBALL_CONF_OPTS += -DENABLE_XR=OFF
 VPINBALL_CONF_OPTS += -DBUILD_SHARED_LIBS=OFF
 VPINBALL_CONF_OPTS += -DPOST_BUILD_COPY_EXT_LIBS=OFF
 
